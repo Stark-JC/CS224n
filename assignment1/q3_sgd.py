@@ -65,7 +65,7 @@ def sgd(f, x0, step, iterations, postprocessing=None, useSaved=False,
         start_iter, oldx, state = load_saved_params()
         if start_iter > 0:
             x0 = oldx
-            step *= 0.5 ** (start_iter / ANNEAL_EVERY)
+            step *= 0.5 ** (start_iter // ANNEAL_EVERY)
 
         if state:
             random.setstate(state)
@@ -100,7 +100,7 @@ def sgd(f, x0, step, iterations, postprocessing=None, useSaved=False,
         if iter % SAVE_PARAMS_EVERY == 0 and useSaved:
             save_params(iter, x)
 
-        if iter % ANNEAL_EVERY == 0:
+        if iter % ANNEAL_EVERY == 0:  # 20000次变成一半
             step *= 0.5
 
     return x
