@@ -219,7 +219,7 @@ def word2vec_sgd_wrapper(word2vecModel, tokens, wordVectors, dataset, C,
     N = wordVectors.shape[0]
     inputVectors = wordVectors[:N / 2, :]
     outputVectors = wordVectors[N / 2:, :]
-    for i in xrange(batchsize):
+    for i in range(batchsize):
         C1 = random.randint(1, C)
         centerword, context = dataset.getRandomContext(C1)
 
@@ -248,7 +248,7 @@ def test_word2vec():
     def getRandomContext(C):
         tokens = ["a", "b", "c", "d", "e"]
         return tokens[random.randint(0, 4)], \
-               [tokens[random.randint(0, 4)] for i in xrange(2 * C)]
+               [tokens[random.randint(0, 4)] for i in range(2 * C)]
 
     dataset.sampleTokenIdx = dummySampleTokenIdx
     dataset.getRandomContext = getRandomContext
