@@ -23,7 +23,7 @@ dimVectors = 10
 # Context size
 C = 5
 
-# Reset the random seed to make sure that everyone gets the same results
+# Reset the random seed to make sure that everyone gets the same results，初始化和负采样的时候会用到随机
 random.seed(31415)
 np.random.seed(9265)
 
@@ -39,8 +39,8 @@ wordVectors = sgd(
 # Note that normalization is not called here. This is not a bug,
 # normalizing during training loses the notion of length.
 
-print "sanity check: cost at convergence should be around or below 10"
-print "training took %d seconds" % (time.time() - startTime)
+print("sanity check: cost at convergence should be around or below 10")
+print("training took %d seconds" % (time.time() - startTime))
 
 # concatenate the input and output word vectors
 wordVectors = np.concatenate(
@@ -61,7 +61,7 @@ covariance = 1.0 / len(visualizeIdx) * temp.T.dot(temp)
 U,S,V = np.linalg.svd(covariance)
 coord = temp.dot(U[:,0:2])
 
-for i in xrange(len(visualizeWords)):
+for i in range(len(visualizeWords)):
     plt.text(coord[i,0], coord[i,1], visualizeWords[i],
         bbox=dict(facecolor='green', alpha=0.1))
 
