@@ -5,8 +5,8 @@ import pickle
 
 from model import Model
 from q2_initialization import xavier_weight_init
-from utils.general_utils import Progbar
-from utils.parser_utils import minibatches, load_and_preprocess_data
+from general_utils import Progbar
+from parser_utils import minibatches, load_and_preprocess_data
 
 
 class Config(object):
@@ -200,7 +200,6 @@ class ParserModel(Model):
         for i, (train_x, train_y) in enumerate(minibatches(train_examples, self.config.batch_size)):
             loss = self.train_on_batch(sess, train_x, train_y)
             prog.update(i + 1, [("train loss", loss)])
-
         print("Evaluating on dev set",)
         dev_UAS, _ = parser.parse(dev_set)
         print("- dev UAS: {:.2f}".format(dev_UAS * 100.0))
