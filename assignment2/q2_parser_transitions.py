@@ -33,7 +33,7 @@ class PartialParse(object):
         if transition == "S":
             self.stack.append(self.buffer[0])
             self.buffer.pop(0)
-        elif transition == "LA":
+        elif transition[:2] == "LA":  # 这里取前两个判断是考虑unlabeled=False的情况，即tran里面包括了依赖关系
             self.dependencies.append((self.stack[-1], self.stack[-2]))
             self.stack.pop(-2)
         else:

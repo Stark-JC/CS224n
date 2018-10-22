@@ -21,8 +21,8 @@ ROOT = '<ROOT>'
 
 class Config(object):
     language = 'english'
-    with_punct = True
-    unlabeled = True  # label 除了 S LA RA 外，是否要在后面加上依赖，如 S-NN
+    with_punct = True  # 是否要将符号也解析
+    unlabeled = False  # label 除了 S LA RA 外，是否要在后面加上依赖，如 S-NN
     lowercase = True
     use_pos = True  # 特征构造时是否要用细粒度词性
     use_dep = True
@@ -61,7 +61,7 @@ class Parser(object):
 
         if self.unlabeled:
             trans = ['L', 'R', 'S']
-            self.n_deprel = 1  # 用于后面方便判断是否
+            self.n_deprel = 1  # 用于后面方便判断
         else:
             trans = ['L-' + l for l in deprel] + ['R-' + l for l in deprel] + ['S']
             self.n_deprel = len(deprel)
@@ -243,6 +243,7 @@ class Parser(object):
         labels += [1] if len(buf) > 0 else [0]  # shift操作
         return labels
 
+    # 返回 UAS 匹配所占百分比，以及用NN模型对dataset进行解析后的依赖
     def parse(self, dataset, eval_batch_size=5000):
         sentences = []
         sentence_id_to_idx = {}
@@ -285,8 +286,9 @@ class ModelWrapper(object):
         mb_x = np.array(mb_x).astype('int32')  # list 转array
         mb_l = [self.parser.legal_labels(p.stack, p.buffer) for p in partial_parses]
         pred = self.parser.model.predict_on_batch(self.parser.session, mb_x)
-        pred = np.argmax(pred + 10000 * np.array(mb_l).astype('float32'), 1)
-        pred = ["S" if p == 2 else ("LA" if p == 0 else "RA") for p in pred]
+        pred = np.argmax(pred + 10000 * np.array(mb_l).astype('float32'),
+                         1)  # 这里10000表示一个是预测出来的操作，一个是通过判断绝对不可能的操作，首先要满足那些绝对不可能的操作的权重很低，反过来就是可能的操作权重高
+        pred = [self.parser.id2tran[p] for p in pred]
         return pred
 
 

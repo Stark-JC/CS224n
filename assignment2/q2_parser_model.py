@@ -16,8 +16,10 @@ class Config(object):
     information parameters. Model objects are passed a Config() object at
     instantiation.
     """
-    n_features = 36
-    n_classes = 3
+    # 这两个值大小取决于parser的config的配置
+    n_features = 48  # 18+18+12的形式
+    n_classes = 79  # 类别不再是3，而是所有类似 S-NN的，但是预测效果很差
+
     dropout = 0.5
     embed_size = 50
     hidden_size = 200
@@ -195,6 +197,7 @@ class ParserModel(Model):
         _, loss = sess.run([self.train_op, self.loss], feed_dict=feed)
         return loss
 
+    # 对训练集进行训练，得到的模型预测开发集
     def run_epoch(self, sess, parser, train_examples, dev_set):
         prog = Progbar(target=1 + len(train_examples) / self.config.batch_size)
         for i, (train_x, train_y) in enumerate(minibatches(train_examples, self.config.batch_size)):
@@ -264,11 +267,12 @@ def main(debug=True):
                 UAS, dependencies = parser.parse(test_set)
                 print("- test UAS: {:.2f}".format(UAS * 100.0))
                 print("Writing predictions")
-                with open('q2_test.predicted.pkl', 'w') as f:
+                with open('q2_test.predicted.pkl', 'wb') as f:
                     pickle.dump(dependencies, f, -1)
                 print("Done!")
 
 if __name__ == '__main__':
-    main(False)
-
-
+    # main(False)
+    with open('q2_test.predicted.pkl', 'rb') as f:
+        dep = pickle.load(f)
+    pass
