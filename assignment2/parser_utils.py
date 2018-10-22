@@ -271,6 +271,7 @@ class Parser(object):
         return UAS, dependencies
 
 
+# 只是一个封装，用的还是parser里面的model来解析
 class ModelWrapper(object):
     def __init__(self, parser, dataset, sentence_id_to_idx):
         self.parser = parser
@@ -281,7 +282,7 @@ class ModelWrapper(object):
         mb_x = [self.parser.extract_features(p.stack, p.buffer, p.dependencies,
                                              self.dataset[self.sentence_id_to_idx[id(p.sentence)]])
                 for p in partial_parses]
-        mb_x = np.array(mb_x).astype('int32')
+        mb_x = np.array(mb_x).astype('int32')  # list 转array
         mb_l = [self.parser.legal_labels(p.stack, p.buffer) for p in partial_parses]
         pred = self.parser.model.predict_on_batch(self.parser.session, mb_x)
         pred = np.argmax(pred + 10000 * np.array(mb_l).astype('float32'), 1)
@@ -347,9 +348,15 @@ def punct(language, pos):
 
 
 def minibatches(data, batch_size):
+    '''
+
+    :param data: [([n_feature长的特征], [0 1，1表示可以采取的操作], 真实的操作)..]
+    :param batch_size: ..
+    :return: one-hot编码真实操作作为label
+    '''
     x = np.array([d[0] for d in data])
     y = np.array([d[2] for d in data])
-    one_hot = np.zeros((y.size, 3))
+    one_hot = np.zeros((y.size, len(data[0][1])))
     one_hot[np.arange(y.size), y] = 1
     return get_minibatches([x, one_hot], batch_size)
 

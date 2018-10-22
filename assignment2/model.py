@@ -102,7 +102,7 @@ class Model(object):
             predictions: np.ndarray of shape (n_samples, n_classes)
         """
         feed = self.create_feed_dict(inputs_batch)
-        predictions = sess.run([self.pred], feed_dict=feed)
+        predictions = sess.run(self.pred, feed_dict=feed)
         return predictions
 
     def build(self):
