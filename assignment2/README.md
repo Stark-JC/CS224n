@@ -100,7 +100,7 @@ dataset是id化的形式。
 这里我们又发现model的预测不是softmax之后的概率向量吗？怎么直接得到字符串形式的移位操作？其实也很简单，代码中对原本的ParserModel的predict函数进行了封装，用了一个ModelWrapper类。
 ##### ModelWrapper 类
 代码中对于预测结果，不单单依据神经网络预测的概率直接进行取最大值操作，还考虑到了当前的允许执行的操作（例如第一步预测出来是LA，但我们知道这个预测100%是错的），就是要事先得排除那些不可能的trans, 代码中采用可能操作权重*10000的操作。
-```
+```python
 # 只是一个封装，用的还是parser里面的model来解析
 class ModelWrapper(object):
     def __init__(self, parser, dataset, sentence_id_to_idx):
