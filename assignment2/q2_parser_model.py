@@ -272,7 +272,7 @@ def main(debug=True):
                 print("Done!")
 
 if __name__ == '__main__':
-    # main(False)
+    main(False)
     with open('q2_test.predicted.pkl', 'rb') as f:
         dep = pickle.load(f)
     pass

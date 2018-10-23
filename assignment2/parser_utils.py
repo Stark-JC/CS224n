@@ -201,7 +201,7 @@ class Parser(object):
     def create_instances(self, examples):
         '''
         :param examples: [{word:[..], pos:[..], head:[..], label:[..]}..]，一个字典表示一个句子，里面用token2id的id表示
-        :return: [([n_feature长的特征], [可以采取的操作], 真实的操作)..]
+        :return: [[([n_feature长的特征], [可以采取的所有操作], 真实的操作)..]..]
         '''
         all_instances = []
         succ = 0
