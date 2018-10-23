@@ -22,7 +22,7 @@ ROOT = '<ROOT>'
 class Config(object):
     language = 'english'
     with_punct = True  # 是否要将符号也解析
-    unlabeled = False  # label 除了 S LA RA 外，是否要在后面加上依赖，如 S-NN
+    unlabeled = False  # label 除了 S LA RA 外，是否要在后面加上依赖，如 S-NN; 默认认为False时，采用LAS指标
     lowercase = True
     use_pos = True  # 特征构造时是否要用细粒度词性
     use_dep = True
@@ -224,7 +224,7 @@ class Parser(object):
                 if gold_t == self.n_trans - 1:
                     stack.append(buf[0])
                     buf = buf[1:]
-                elif gold_t < self.n_deprel:  # 说明是LA-XXX
+                elif gold_t < self.n_deprel:  # 说明是L-XXX
                     arcs.append((stack[-1], stack[-2], gold_t))
                     stack = stack[:-2] + [stack[-1]]
                 else:
@@ -256,20 +256,28 @@ class Parser(object):
         model = ModelWrapper(self, dataset, sentence_id_to_idx)
         dependencies = minibatch_parse(sentences, model, eval_batch_size)
 
-        UAS = all_tokens = 0.0
+        score = all_tokens = 0.0
         for i, ex in enumerate(dataset):
             head = [-1] * len(ex['word'])
-            for h, t, in dependencies[i]:
+            dependency = [-1] * len(ex['word'])
+            for h, t, dep in dependencies[i]:
                 head[t] = h
+                dependency[t] = dep
+            index = 1
             for pred_h, gold_h, gold_l, pos in \
                     zip(head[1:], ex['head'][1:], ex['label'][1:], ex['pos'][1:]):
-                    assert self.id2tok[pos].startswith(P_PREFIX)
-                    pos_str = self.id2tok[pos][len(P_PREFIX):]
-                    if (self.with_punct) or (not punct(self.language, pos_str)):
-                        UAS += 1 if pred_h == gold_h else 0
-                        all_tokens += 1
-        UAS /= all_tokens
-        return UAS, dependencies
+                assert self.id2tok[pos].startswith(P_PREFIX)
+                pos_str = self.id2tok[pos][len(P_PREFIX):]
+                if self.with_punct or (not punct(self.language, pos_str)):
+                    if pred_h == gold_h:
+                        if self.unlabeled:  # UAS
+                            score += 1
+                        elif gold_l == self.tran2id[dependency[index]]:  # LAS
+                            score += 1
+                    all_tokens += 1
+                index += 1
+        score /= all_tokens
+        return score, dependencies
 
 
 # 只是一个封装，用的还是parser里面的model来解析

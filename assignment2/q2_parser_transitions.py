@@ -34,10 +34,10 @@ class PartialParse(object):
             self.stack.append(self.buffer[0])
             self.buffer.pop(0)
         elif transition[0] == "L":  # 这里取前两个判断是考虑unlabeled=False的情况，即tran里面包括了依赖关系
-            self.dependencies.append((self.stack[-1], self.stack[-2]))
+            self.dependencies.append((self.stack[-1], self.stack[-2], transition))
             self.stack.pop(-2)
         else:
-            self.dependencies.append((self.stack[-2], self.stack[-1]))
+            self.dependencies.append((self.stack[-2], self.stack[-1], transition))
             self.stack.pop(-1)
 
     def parse(self, transitions):

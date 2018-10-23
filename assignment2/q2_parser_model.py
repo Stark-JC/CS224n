@@ -19,12 +19,13 @@ class Config(object):
     # 这两个值大小取决于parser的config的配置
     n_features = 48  # 18+18+12的形式
     n_classes = 79  # 类别不再是3，而是所有类似 S-NN的，但是预测效果很差
+    # debug=True 为 77；
 
     dropout = 0.5
     embed_size = 50
     hidden_size = 200
     batch_size = 2048
-    n_epochs = 10
+    n_epochs = 100
     lr = 0.001
 
 
@@ -204,19 +205,19 @@ class ParserModel(Model):
             loss = self.train_on_batch(sess, train_x, train_y)
             prog.update(i + 1, [("train loss", loss)])
         print("Evaluating on dev set",)
-        dev_UAS, _ = parser.parse(dev_set)
-        print("- dev UAS: {:.2f}".format(dev_UAS * 100.0))
-        return dev_UAS
+        dev_score, _ = parser.parse(dev_set)
+        print("- dev_score: {:.2f}".format(dev_score * 100.0))
+        return dev_score
 
     def fit(self, sess, saver, parser, train_examples, dev_set):
-        best_dev_UAS = 0
+        best_dev_score = 0
         for epoch in range(self.config.n_epochs):
             print("Epoch {:} out of {:}".format(epoch + 1, self.config.n_epochs))
-            dev_UAS = self.run_epoch(sess, parser, train_examples, dev_set)
-            if dev_UAS > best_dev_UAS:
-                best_dev_UAS = dev_UAS
+            dev_score = self.run_epoch(sess, parser, train_examples, dev_set)
+            if dev_score > best_dev_score:
+                best_dev_score = dev_score
                 if saver:
-                    print("New best dev UAS! Saving model in ./data/weights/parser.weights")
+                    print("New best dev score! Saving model in ./data/weights/parser.weights")
                     saver.save(sess, './data/weights/parser.weights')
             print
 
@@ -264,8 +265,8 @@ def main(debug=True):
                 print("Restoring the best model weights found on the dev set")
                 saver.restore(session, './data/weights/parser.weights')
                 print("Final evaluation on test set",)
-                UAS, dependencies = parser.parse(test_set)
-                print("- test UAS: {:.2f}".format(UAS * 100.0))
+                score, dependencies = parser.parse(test_set)
+                print("- test score: {:.2f}".format(score * 100.0))
                 print("Writing predictions")
                 with open('q2_test.predicted.pkl', 'wb') as f:
                     pickle.dump(dependencies, f, -1)

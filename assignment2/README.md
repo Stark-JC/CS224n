@@ -1,7 +1,8 @@
 [toc]
+
 # 前言
 本篇主要对CS224N的assignment2中的question2代码进行理解分析。
-## Parser
+# Parser
 一个parser需要以下几个部分：
 1. 解析器全局参数
     -  `unlabeled`: label 除了 S, LA, RA 外，是否要在后面加上依赖关系，如 S-NN
@@ -14,18 +15,18 @@
     - `tran2id, id2tran` : 所有转移操作与id的映射关系，id用于表示输出y
 3. ParserModel: 用于预测某个状态的决策。可用tensorflow搭建。输入是`n_features`维，输出`n_classes`维
 
-### Parser 类
-#### `__init__(self, dataset)`
+## Parser 类
+### `__init__(self, dataset)`
 输入是从conll格式文件读来的训练数据，格式为
 ```
 [{word:[..], pos:[..], head:[..], label:[..]},{..},..]
 ```
 ，一个字典表示一个句子，一个句子里面有词，对应词性，对应依赖关系的head, 以及对应依赖关系的类型，这里输入都是原始的字符串值，然后在init里面进行2token的转换。
 
-#### `vectorize(self, examples)`
+### `vectorize(self, examples)`
 对输入字符串的example转换为对应id表示的example, 这里example的数据格式和上面的dataset的数据格式一致。
 
-#### `create_instances(self, examples)`
+### `create_instances(self, examples)`
 创建格式化的训练数据。
 ```python
 '''
@@ -45,11 +46,11 @@
 
 由于该训练数据还不是纯种的(X,y)形式，故需要有个函数将这些数据转换成标准的格式，代码中是`minibatch(data, batch_size)`函数，用与对data进行转换（主要是y的格式变成one-hot），然后返回一个minibatch生成器。
 
-##### `extract_features(self, stack, buf, arcs, ex)`
+#### `extract_features(self, stack, buf, arcs, ex)`
 根据config里面指定的feature构造方式，对当前状态进行feature构造，stack, buf， arcs里面都是针对该句子的id，如首位就是id=1..
 返回的是转换后的全局token2id的id
 
-##### `get_oracle(self, stack, buf, ex)`
+#### `get_oracle(self, stack, buf, ex)`
 根据example内容，返回当前state所执行的正确操作，因为example里面有head。主要比较stack顶两位对应head之前的关系。具体思路如下：
 
 ```python
@@ -81,23 +82,23 @@ def get_oracle(self, stack, buf, ex):
         else:
             return None if len(buf) == 0 else self.n_trans - 1
 ```
-##### `legal_labels(self, stack, buf)`
+#### `legal_labels(self, stack, buf)`
 返回当前可以允许的所有移位操作的id。
 
-#### `parse(self, dataset, eval_batch_size)`
+### `parse(self, dataset, eval_batch_size)`
 dataset是id化的形式。
 返回预测head list与正确head list匹配所占百分比（UAS），以及用NN模型对dataset进行解析后的依赖。
 该函数用于dev集以及test集UAS的计算，训练集不会用到这个，因为训练集不用UAS作为误差， 而是cross-entropy.
 
 调用了一个minibatch_parse来得到预测的依赖。
 
-##### `minibatch_parse(sentences, model, batch_size)`
+#### `minibatch_parse(sentences, model, batch_size)`
 1. 对每个sentence构造一个`PartialParse`（这个`PartialParse`是没有预测功能的，里面没有model，只维护stack, buf, arcs以及移位操作，需要由外界提供transitions）
 2. 每次预测minibatch_size大小的sentence得到transitions， 这里预测是通过传入的model实现的，得到的transitions是字符串的移位操作。
 3. 得到了预测的transitions，传入到PartialParse的parse_step函数进行dependencies的更新。
 
 这里我们又发现model的预测不是softmax之后的概率向量吗？怎么直接得到字符串形式的移位操作？其实也很简单，代码中对原本的ParserModel的predict函数进行了封装，用了一个ModelWrapper类。
-###### ModelWrapper 类
+##### ModelWrapper 类
 代码中对于预测结果，不单单依据神经网络预测的概率直接进行取最大值操作，还考虑到了当前的允许执行的操作（例如第一步预测出来是LA，但我们知道这个预测100%是错的），就是要事先得排除那些不可能的trans, 代码中采用可能操作权重*10000的操作。
 ```
 # 只是一个封装，用的还是parser里面的model来解析
@@ -128,7 +129,7 @@ class ModelWrapper(object):
         return pred
 ```
 
-### ParserModel 类
+## ParserModel 类
 用于预测某个状态的决策。可用tensorflow搭建。
 
 输入是某一个state（stack, buf, arc）的特征的向量表示，例如一种36维的构造方式为：
