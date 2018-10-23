@@ -51,33 +51,35 @@
 
 ##### `get_oracle(self, stack, buf, ex)`
 根据example内容，返回当前state所执行的正确操作，因为example里面有head。主要比较stack顶两位对应head之前的关系。具体思路如下：
+
 ```python
-if len(stack) < 2:  # 如果stack上面只有root，就执行shift，返回对应tran的编号
-    return self.n_trans - 1
-
-i0 = stack[-1]
-i1 = stack[-2]
-h0 = ex['head'][i0]
-h1 = ex['head'][i1]
-l0 = ex['label'][i0]
-l1 = ex['label'][i1]
-
-if self.unlabeled:
-    if (i1 > 0) and (h1 == i0):
-        return 0
-    elif (i1 >= 0) and (h0 == i1) and \
-         (not any([x for x in buf if ex['head'][x] == i0])):
-        return 1
+def get_oracle(self, stack, buf, ex):
+    if len(stack) < 2:  # 如果stack上面只有root，就执行shift，返回对应tran的编号
+        return self.n_trans - 1
+    
+    i0 = stack[-1]
+    i1 = stack[-2]
+    h0 = ex['head'][i0]
+    h1 = ex['head'][i1]
+    l0 = ex['label'][i0]
+    l1 = ex['label'][i1]
+    
+    if self.unlabeled:
+        if (i1 > 0) and (h1 == i0):
+            return 0
+        elif (i1 >= 0) and (h0 == i1) and \
+             (not any([x for x in buf if ex['head'][x] == i0])):
+            return 1
+        else:
+            return None if len(buf) == 0 else 2
     else:
-        return None if len(buf) == 0 else 2
-else:
-    if (i1 > 0) and (h1 == i0):
-        return l1 if (l1 >= 0) and (l1 < self.n_deprel) else None
-    elif (i1 >= 0) and (h0 == i1) and \
-         (not any([x for x in buf if ex['head'][x] == i0])):
-        return l0 + self.n_deprel if (l0 >= 0) and (l0 < self.n_deprel) else None
-    else:
-        return None if len(buf) == 0 else self.n_trans - 1
+        if (i1 > 0) and (h1 == i0):
+            return l1 if (l1 >= 0) and (l1 < self.n_deprel) else None
+        elif (i1 >= 0) and (h0 == i1) and \
+             (not any([x for x in buf if ex['head'][x] == i0])):
+            return l0 + self.n_deprel if (l0 >= 0) and (l0 < self.n_deprel) else None
+        else:
+            return None if len(buf) == 0 else self.n_trans - 1
 ```
 ##### `legal_labels(self, stack, buf)`
 返回当前可以允许的所有移位操作的id。
