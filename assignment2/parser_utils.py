@@ -22,7 +22,7 @@ ROOT = '<ROOT>'
 class Config(object):
     language = 'english'
     with_punct = True  # 是否要将符号也解析
-    unlabeled = False  # label 除了 S LA RA 外，是否要在后面加上依赖，如 S-NN; 默认认为False时，采用LAS指标
+    unlabeled = True  # label 除了 S LA RA 外，是否要在后面加上依赖，如 S-NN; 默认认为False时，采用LAS指标
     lowercase = True
     use_pos = True  # 特征构造时是否要用细粒度词性
     use_dep = True

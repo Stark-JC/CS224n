@@ -17,9 +17,13 @@ class Config(object):
     instantiation.
     """
     # 这两个值大小取决于parser的config的配置
-    n_features = 48  # 18+18+12的形式
-    n_classes = 79  # 类别不再是3，而是所有类似 S-NN的，但是预测效果很差
-    # debug=True 为 77；
+    n_features = 36  # use_pos=True && use_dep=False 为 36
+    # use_pos=True && use_dep=True  为 48
+    # use_pos=False && use_dep=False  为 18
+
+    n_classes = 3  # unlabeled=True 时为 3，
+    # debug=False && unlabeled=False 为 79;
+    # debug=True && unlabeled=False 为 77；
 
     dropout = 0.5
     embed_size = 50
@@ -236,41 +240,42 @@ def main(debug=True):
     if not os.path.exists('./data/weights/'):
         os.makedirs('./data/weights/')
 
-    with tf.Graph().as_default():
-        print("Building model...",)
-        start = time.time()
-        model = ParserModel(config, embeddings)
-        parser.model = model
-        print("took {:.2f} seconds\n".format(time.time() - start))
+    with tf.device("/gpu:0"):
+        with tf.Graph().as_default():
+            print("Building model...", )
+            start = time.time()
+            model = ParserModel(config, embeddings)
+            parser.model = model
+            print("took {:.2f} seconds\n".format(time.time() - start))
 
-        init = tf.global_variables_initializer()
-        # If you are using an old version of TensorFlow, you may have to use
-        # this initializer instead.
-        # init = tf.initialize_all_variables()
-        saver = None if debug else tf.train.Saver()
+            init = tf.global_variables_initializer()
+            # If you are using an old version of TensorFlow, you may have to use
+            # this initializer instead.
+            # init = tf.initialize_all_variables()
+            saver = None if debug else tf.train.Saver()
 
-        with tf.Session() as session:
-            parser.session = session
-            session.run(init)
+            with tf.Session() as session:
+                parser.session = session
+                session.run(init)
 
-            print(80 * "=")
-            print("TRAINING")
-            print(80 * "=")
-            model.fit(session, saver, parser, train_examples, dev_set)
-
-            if not debug:
                 print(80 * "=")
-                print("TESTING")
+                print("TRAINING")
                 print(80 * "=")
-                print("Restoring the best model weights found on the dev set")
-                saver.restore(session, './data/weights/parser.weights')
-                print("Final evaluation on test set",)
-                score, dependencies = parser.parse(test_set)
-                print("- test score: {:.2f}".format(score * 100.0))
-                print("Writing predictions")
-                with open('q2_test.predicted.pkl', 'wb') as f:
-                    pickle.dump(dependencies, f, -1)
-                print("Done!")
+                model.fit(session, saver, parser, train_examples, dev_set)
+
+                if not debug:
+                    print(80 * "=")
+                    print("TESTING")
+                    print(80 * "=")
+                    print("Restoring the best model weights found on the dev set")
+                    saver.restore(session, './data/weights/parser.weights')
+                    print("Final evaluation on test set", )
+                    score, dependencies = parser.parse(test_set)
+                    print("- test score: {:.2f}".format(score * 100.0))
+                    print("Writing predictions")
+                    with open('q2_test.predicted.pkl', 'wb') as f:
+                        pickle.dump(dependencies, f, -1)
+                    print("Done!")
 
 if __name__ == '__main__':
     main(False)

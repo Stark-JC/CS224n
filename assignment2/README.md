@@ -87,8 +87,7 @@ def get_oracle(self, stack, buf, ex):
 
 ### `parse(self, dataset, eval_batch_size)`
 dataset是id化的形式。
-返回预测head list与正确head list匹配所占百分比（UAS），以及用NN模型对dataset进行解析后的依赖。
-该函数用于dev集以及test集UAS的计算，训练集不会用到这个，因为训练集不用UAS作为误差， 而是cross-entropy.
+返回预测head list与正确head list匹配所占百分比（如果是UAS），以及用NN模型对dataset进行解析后的依赖。该函数用于dev集以及test集UAS的计算，训练集不会用到这个，因为训练集不用UAS作为误差， 而是cross-entropy.
 
 调用了一个minibatch_parse来得到预测的依赖。
 
@@ -140,3 +139,36 @@ feature构造方式: 6 (stack和buf头三个word) + 12 (stack顶2个词的左右
 这样，输入就是36维的向量，每维的值都是事先建立索引的token2id里面的id号，一般在第二层是lookup层，查找id的预训练词向量。
 
 输出是在改state的决策，如上面这种特征构造方式，决策有三类：LA, RA, S。
+
+# 实验
+## UAS
+```python
+#参数设置：
+n_epochs = 100
+n_features = 36
+n_classes = 3
+unlabeled = True
+
+#运行结果：
+train_loss = 0.012
+dev_score = 85.59
+test_score = 86.77
+```
+## LAS
+```python
+#参数设置：
+n_epochs = 100
+n_features = 48
+n_classes = 79
+unlabeled = False
+
+#运行结果：
+train_loss = 0.033
+dev_score = 51.36
+test_score = 52.83
+```
+## 理解
+1. 一般epoch大于10之后，loss会变小，但预测精度变化不明显
+2. 如何改善LAS预测精度？
+
+
