@@ -29,10 +29,12 @@ class Config(object):
     embed_size = 50
     hidden_size = 200
     batch_size = 2048
-    n_epochs = 100
+    n_epochs = 1
     lr = 0.001
 
-
+    lr_for_change = 0.01
+    decay_rate = 0.9
+    decay_steps = 50
 class ParserModel(Model):
     """
     Implements a feedforward neural network with an embedding layer and single hidden layer.
@@ -193,6 +195,12 @@ class ParserModel(Model):
         Returns:
             train_op: The Op for training.
         """
+        # 指数衰减的LR
+        # global_step = tf.get_variable('global_step', initializer=tf.constant(0), trainable=False)
+        # lr = tf.train.exponential_decay(self.config.lr_for_change, global_step=global_step, decay_steps=self.config.decay_steps, decay_rate=self.config.decay_rate)
+        # train_op = tf.train.AdamOptimizer(learning_rate=lr).minimize(loss)
+
+        # 常量LR
         train_op = tf.train.AdamOptimizer(self.config.lr).minimize(loss)
         return train_op
 
@@ -278,7 +286,7 @@ def main(debug=True):
                     print("Done!")
 
 if __name__ == '__main__':
-    main(False)
+    main(True)
     with open('q2_test.predicted.pkl', 'rb') as f:
         dep = pickle.load(f)
     pass
