@@ -512,7 +512,8 @@ if __name__ == "__main__":
     command_parser.set_defaults(func=do_shell)
 
     # ARGS = parser.parse_args()
-    ARGS = parser.parse_args(['train'])
+    # https://docs.python.org/3.6/library/argparse.html#argparse._SubParsersAction
+    ARGS = parser.parse_args(['evaluate', '-m results/window/20181109_173835'])
     if ARGS.func is None:
         parser.print_help()
         sys.exit(1)
