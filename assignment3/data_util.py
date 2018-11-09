@@ -73,7 +73,8 @@ class ModelHelper(object):
         self.max_length = max_length
 
     def vectorize_example(self, sentence, labels=None):
-        sentence_ = [[self.tok2id.get(normalize(word), self.tok2id[UNK]), self.tok2id[P_CASE + casing(word)]] for word in sentence]
+        sentence_ = [[self.tok2id.get(normalize(word), self.tok2id[UNK]), self.tok2id[P_CASE + casing(word)]] for word
+                     in sentence]  # [[wordid,caseid]]
         if labels:
             labels_ = [LBLS.index(l) for l in labels]
             return sentence_, labels_
@@ -102,7 +103,7 @@ class ModelHelper(object):
         if not os.path.exists(path):
             os.makedirs(path)
         # Save the tok2id map.
-        with open(os.path.join(path, "features.pkl"), "w") as f:
+        with open(os.path.join(path, "features.pkl"), "wb") as f:
             pickle.dump([self.tok2id, self.max_length], f)
 
     @classmethod
@@ -116,22 +117,22 @@ class ModelHelper(object):
 
 def load_and_preprocess_data(args):
     logger.info("Loading training data...")
-    train = read_conll(args.data_train)
+    train = read_conll(args.data_train)  # [([words of a sentence],[labels])]
     logger.info("Done. Read %d sentences", len(train))
     logger.info("Loading dev data...")
     dev = read_conll(args.data_dev)
     logger.info("Done. Read %d sentences", len(dev))
 
-    helper = ModelHelper.build(train)
+    helper = ModelHelper.build(train)  # 同时也初始化了ModelHelper，诡异的初始化方式...
 
     # now process all the input data.
-    train_data = helper.vectorize(train)
+    train_data = helper.vectorize(train)  # [ ( [ [wordid,caseid] ], [label_ids] ) ]
     dev_data = helper.vectorize(dev)
 
     return helper, train_data, dev_data, train, dev
 
 def load_embeddings(args, helper):
-    embeddings = np.array(np.random.randn(len(helper.tok2id) + 1, EMBED_SIZE), dtype=np.float32)
+    embeddings = np.array(np.random.randn(len(helper.tok2id) + 1, EMBED_SIZE), dtype=np.float32)  # 多1是为了和token2id的起始值对应
     embeddings[0] = 0.
     for word, vec in load_word_vector_mapping(args.vocab, args.vectors).items():
         word = normalize(word)
@@ -144,12 +145,13 @@ def load_embeddings(args, helper):
 def build_dict(words, max_words=None, offset=0):
     cnt = Counter(words)
     if max_words:
-        words = cnt.most_common(max_words)
+        words = cnt.most_common(max_words)  # [(word, count)]
     else:
         words = cnt.most_common()
     return {word: offset+i for i, (word, _) in enumerate(words)}
 
 
+# 提取出各个实体（串），遇到 O ，且之前不是 O ，表示实体结束
 def get_chunks(seq, default=LBLS.index(NONE)):
     """Breaks input of 4 4 4 0 0 4 0 ->   (0, 4, 5), (0, 6, 7)"""
     chunks = []

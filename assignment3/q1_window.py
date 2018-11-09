@@ -97,10 +97,10 @@ def make_windowed_data(data, start, end, window_size=1):
     windowed_data = []
     for sentence, labels in data:
         orig_n = len(sentence)
-        sentence[start] * window_size + sentence + [end] * window_size
+        sentence = [start] * window_size + sentence + [end] * window_size
         for i in range(window_size, orig_n + window_size):
             temp_feats = []
-            for j in range(i - window_size, i + window_size):
+            for j in range(i - window_size, i + window_size + 1):
                 temp_feats.extend(sentence[j])
             windowed_data.append((temp_feats, labels[i - window_size]))
     return windowed_data
@@ -511,7 +511,8 @@ if __name__ == "__main__":
                                 help="Path to word vectors file")
     command_parser.set_defaults(func=do_shell)
 
-    ARGS = parser.parse_args()
+    # ARGS = parser.parse_args()
+    ARGS = parser.parse_args(['train'])
     if ARGS.func is None:
         parser.print_help()
         sys.exit(1)
