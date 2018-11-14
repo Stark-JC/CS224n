@@ -384,6 +384,7 @@ def do_train(args):
         with tf.Session() as session:
             session.run(init)
             model.fit(session, saver, train, dev)
+            saver.restore(session, model.config.model_output)
             if report:
                 report.log_output(model.output(session, dev_raw))
                 report.save()
@@ -513,7 +514,9 @@ if __name__ == "__main__":
 
     # ARGS = parser.parse_args()
     # https://docs.python.org/3.6/library/argparse.html#argparse._SubParsersAction
-    ARGS = parser.parse_args(['evaluate', '-m results/window/20181109_173835'])
+    # ARGS = parser.parse_args(['evaluate', '-m', 'results/window/20181109_173835/'])
+    # ARGS = parser.parse_args(['shell', '-m', 'results/window/20181109_173835/'])
+    ARGS = parser.parse_args(['train'])
     if ARGS.func is None:
         parser.print_help()
         sys.exit(1)
