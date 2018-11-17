@@ -6,13 +6,15 @@ import numpy as np
 import os
 import random
 
-class StanfordSentiment:
-    def __init__(self, path=None, tablesize = 1000000):
-        if not path:
-            path = "utils/datasets/stanfordSentimentTreebank"
 
-        self.path = path
+class Dataset:
+    '''
+    加载自定义数据集
+    '''
+
+    def __init__(self, path=None, tablesize=1000000):
         self.tablesize = tablesize
+        self.sentence_path = path
 
     def tokens(self):
         if hasattr(self, "_tokens") and self._tokens:
@@ -52,7 +54,7 @@ class StanfordSentiment:
             return self._sentences
 
         sentences = []
-        with open(self.path + "/datasetSentences.txt", "r") as f:
+        with open(self.sentence_path, "r") as f:
             first = True
             for line in f:
                 if first:
@@ -87,8 +89,8 @@ class StanfordSentiment:
         rejectProb = self.rejectProb()
         tokens = self.tokens()
         allsentences = [[w for w in s
-            if 0 >= rejectProb[tokens[w]] or random.random() >= rejectProb[tokens[w]]]
-            for s in sentences * 30]
+                         if 0 >= rejectProb[tokens[w]] or random.random() >= rejectProb[tokens[w]]]
+                        for s in sentences * 30]
 
         allsentences = [s for s in allsentences if len(s) > 1]
 
@@ -104,8 +106,8 @@ class StanfordSentiment:
         wordID = random.randint(0, len(sent) - 1)
 
         context = sent[max(0, wordID - C):wordID]
-        if wordID+1 < len(sent):
-            context += sent[wordID+1:min(len(sent), wordID + C + 1)]
+        if wordID + 1 < len(sent):
+            context += sent[wordID + 1:min(len(sent), wordID + C + 1)]
 
         centerword = sent[wordID]
         context = [w for w in context if w != centerword]
@@ -148,7 +150,7 @@ class StanfordSentiment:
         for i in range(self.numSentences()):
             sentence = sentences[i]
             full_sent = " ".join(sentence).replace('-lrb-', '(').replace('-rrb-', ')')
-            #print(full_sent)
+            # print(full_sent)
             sent_labels[i] = labels[dictionary[full_sent]]
 
         self._sent_labels = sent_labels

@@ -59,7 +59,7 @@ class NERModel(Model):
         token_cm = ConfusionMatrix(labels=LBLS)
 
         correct_preds, total_correct, total_preds = 0., 0., 0.
-        for _, labels, labels_  in self.output(sess, examples_raw, examples):
+        for _, labels, labels_ in self.output(sess, examples_raw, examples):  # sentence, true_labels, pred_labels
             for l, l_ in zip(labels, labels_):
                 token_cm.update(l, l_)
             gold = set(get_chunks(labels))
@@ -78,7 +78,7 @@ class NERModel(Model):
         prog = Progbar(target=1 + int(len(train_examples) / self.config.batch_size))
         for i, batch in enumerate(minibatches(train_examples, self.config.batch_size)):
             loss = self.train_on_batch(sess, *batch)
-            prog.update(i + 1, [("train loss", loss)])
+            prog.update(i + 1, [("train loss", loss)])  # 同时报告train_loss的值
             if self.report: self.report.log_train_loss(loss)
         print("")
 
@@ -105,10 +105,10 @@ class NERModel(Model):
             inputs = self.preprocess_sequence_data(self.helper.vectorize(inputs_raw))
 
         preds = []
-        prog = Progbar(target=1 + int(len(inputs) / self.config.batch_size))
+        prog = Progbar(target=1 + int(len(inputs) / self.config.batch_size))  # 设置总数，然后每次只要update当前数就行
         for i, batch in enumerate(minibatches(inputs, self.config.batch_size, shuffle=False)):
             # Ignore predict
-            batch = batch[:1] + batch[2:]
+            batch = batch[:1] + batch[2:]  # 为啥还要加batch[2:]，要忽略输出的话直接前面一半不就好了？
             preds_ = self.predict_on_batch(sess, *batch)
             preds += list(preds_)
             prog.update(i + 1, [])
@@ -117,7 +117,7 @@ class NERModel(Model):
     def fit(self, sess, saver, train_examples_raw, dev_set_raw):
         best_score = 0.
 
-        train_examples = self.preprocess_sequence_data(train_examples_raw)
+        train_examples = self.preprocess_sequence_data(train_examples_raw)  # [([feature_ids],label_id)]
         dev_set = self.preprocess_sequence_data(dev_set_raw)
 
         for epoch in range(self.config.n_epochs):

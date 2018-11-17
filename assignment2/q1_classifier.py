@@ -79,7 +79,7 @@ class SoftmaxModel(Model):
         data into a batch of predictions. In this case, the transformation is a linear layer plus a
         softmax transformation:
 
-        y = softmax(Wx + b)
+        y = softmax(xW + b)
 
         Hint: Make sure to create tf.Variables as needed.
         Hint: For this simple use-case, it's sufficient to initialize both weights W
@@ -92,8 +92,9 @@ class SoftmaxModel(Model):
         """
         ### YOUR CODE HERE
         with tf.variable_scope("transformation"):
-            bias = tf.Variable(tf.random_uniform([self.config.n_classes]))
-            W = tf.Variable(tf.random_uniform([self.config.n_features, self.config.n_classes]))
+            bias = tf.get_variable("bias", [self.config.n_classes], initializer=tf.random_uniform_initializer())
+            W = tf.get_variable("weights", [self.config.n_features, self.config.n_classes],
+                                initializer=tf.random_uniform_initializer())
             z = tf.matmul(self.input_placeholder, W) + bias
         pred = softmax(z)
         ### END YOUR CODE
@@ -169,9 +170,10 @@ class SoftmaxModel(Model):
             start_time = time.time()
             average_loss = self.run_epoch(sess, inputs, labels)
             duration = time.time() - start_time
-            print 'Epoch {:}: loss = {:.2f} ({:.3f} sec)'.format(epoch, average_loss, duration)
+            print('Epoch {:}: loss = {:.2f} ({:.3f} sec)'.format(epoch, average_loss, duration))
             losses.append(average_loss)
         return losses
+
 
     def __init__(self, config):
         """Initializes the model.
@@ -193,6 +195,7 @@ def test_softmax_model():
     labels = np.zeros((config.n_samples, config.n_classes), dtype=np.int32)
     labels[:, 0] = 1
 
+    testbatch = np.random.rand(config.batch_size, config.n_features)
     # Tell TensorFlow that the model will be built into the default Graph.
     # (not required but good practice)
     with tf.Graph().as_default():
@@ -209,11 +212,13 @@ def test_softmax_model():
             sess.run(init)
             # Fit the model
             losses = model.fit(sess, inputs, labels)
+            # pred = model.predict_on_batch(sess, testbatch) # 为什么会报错？？？
+            # print(pred)
 
     # If Ops are implemented correctly, the average loss should fall close to zero
     # rapidly.
     assert losses[-1] < .5
-    print "Basic (non-exhaustive) classifier tests pass"
+    print("Basic (non-exhaustive) classifier tests pass")
 
 
 if __name__ == "__main__":

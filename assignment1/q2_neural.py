@@ -35,12 +35,9 @@ def forward_backward_prop(data, labels, params, dimensions):
     ofs += H * Dy
     b2 = np.reshape(params[ofs:ofs + Dy], (1, Dy))
 
-    ### YOUR CODE HERE: forward propagation
     h = sigmoid(np.dot(data, W1) + b1)  # M * H
     yhat = softmax(np.dot(h, W2) + b2)  # M * Dy
-    ### END YOUR CODE
 
-    ### YOUR CODE HERE: backward propagation
     grad_cost1 = (yhat - labels) / data.shape[0]  # M * Dy, 最后一层，平均化
     tmp = np.dot(grad_cost1, W2.T)  # M * H
     grad_cost2 = sigmoid_grad(h) * tmp / data.shape[0]  # M * H， 隐含层，全部加和后的误差再平均化，标准梯度下降
@@ -52,23 +49,7 @@ def forward_backward_prop(data, labels, params, dimensions):
     gradW1 = np.dot(data.T, grad_cost2)  # Dx * H
     gradb1 = np.sum(grad_cost2, 0)  # 1 * H
 
-    ### END YOUR CODE
 
-    ### STANDRED CODE
-    cost = np.sum(-np.log(yhat[labels==1])) / data.shape[0]
-
-    d3 = (yhat - labels) / data.shape[0]
-    gradW2 = np.dot(h.T, d3)
-    gradb2 = np.sum(d3,0,keepdims=True)
-
-    dh = np.dot(d3,W2.T)
-    grad_h = sigmoid_grad(h) * dh
-
-    gradW1 = np.dot(data.T,grad_h)
-    gradb1 = np.sum(grad_h,0)
-    ### END STANDRED CODE
-
-    ### Stack gradients (do not modify)
     grad = np.concatenate((gradW1.flatten(), gradb1.flatten(),
         gradW2.flatten(), gradb2.flatten()))
 

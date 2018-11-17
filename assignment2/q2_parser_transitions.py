@@ -19,12 +19,9 @@ class PartialParse(object):
         """
         # The sentence being parsed is kept for bookkeeping purposes. Do not use it in your code.
         self.sentence = sentence
-
-        ### YOUR CODE HERE
         self.stack = ['ROOT']
         self.buffer = sentence[:]
         self.dependencies = []
-        ### END YOUR CODE
 
     def parse_step(self, transition):
         """Performs a single parse step by applying the given transition to this partial parse
@@ -33,17 +30,15 @@ class PartialParse(object):
             transition: A string that equals "S", "LA", or "RA" representing the shift, left-arc,
                         and right-arc transitions.
         """
-        ### YOUR CODE HERE
         if transition == "S":
             self.stack.append(self.buffer[0])
             self.buffer.pop(0)
-        elif transition == "LA":
-            self.dependencies.append((self.stack[-1], self.stack[-2]))
+        elif transition[0] == "L":  # 这里取前两个判断是考虑unlabeled=False的情况，即tran里面包括了依赖关系
+            self.dependencies.append((self.stack[-1], self.stack[-2], transition))
             self.stack.pop(-2)
         else:
-            self.dependencies.append((self.stack[-2], self.stack[-1]))
+            self.dependencies.append((self.stack[-2], self.stack[-1], transition))
             self.stack.pop(-1)
-            ### END YOUR CODE
 
     def parse(self, transitions):
         """Applies the provided transitions to this PartialParse
@@ -76,28 +71,22 @@ def minibatch_parse(sentences, model, batch_size):
                       contain the parse for sentences[i]).
     """
 
-    ### YOUR CODE HERE
     # refer: https://github.com/zysalice/cs224/blob/master/assignment2/q2_parser_transitions.py
     partial_parses = [PartialParse(s) for s in sentences]
-
     unfinished_parse = partial_parses
-
     while len(unfinished_parse) > 0:
         minibatch = unfinished_parse[0:batch_size]
-        # perform transition and single step parser on the minibatch until it is empty
         while len(minibatch) > 0:
-            transitions = model.predict(minibatch)
+            transitions = model.predict(minibatch)  # 通过一个模型来预测一组sentence对应的动作
             for index, action in enumerate(transitions):
                 minibatch[index].parse_step(action)
             minibatch = [parse for parse in minibatch if len(parse.stack) > 1 or len(parse.buffer) > 0]
 
-        # move to the next batch
         unfinished_parse = unfinished_parse[batch_size:]
 
     dependencies = []
     for n in range(len(sentences)):
         dependencies.append(partial_parses[n].dependencies)
-    ### END YOUR CODE
 
     return dependencies
 
@@ -116,7 +105,7 @@ def test_step(name, transition, stack, buf, deps,
         "{:} test resulted in buffer {:}, expected {:}".format(name, buf, ex_buf)
     assert deps == ex_deps, \
         "{:} test resulted in dependency list {:}, expected {:}".format(name, deps, ex_deps)
-    print "{:} test passed!".format(name)
+    print("{:} test passed!".format(name))
 
 
 def test_parse_step():
@@ -143,7 +132,7 @@ def test_parse():
         "parse test resulted in dependencies {:}, expected {:}".format(dependencies, expected)
     assert tuple(sentence) == ("parse", "this", "sentence"), \
         "parse test failed: the input sentence should not be modified"
-    print "parse test passed!"
+    print("parse test passed!")
 
 
 class DummyModel:
@@ -181,7 +170,7 @@ def test_minibatch_parse():
                       (('only', 'ROOT'), ('only', 'arcs'), ('only', 'left')))
     test_dependencies("minibatch_parse", deps[3],
                       (('again', 'ROOT'), ('again', 'arcs'), ('again', 'left'), ('again', 'only')))
-    print "minibatch_parse test passed!"
+    print("minibatch_parse test passed!")
 
 
 if __name__ == '__main__':
