@@ -268,7 +268,7 @@ class RNNModel(NERModel):
                                 initializer=tf.contrib.layers.xavier_initializer())
             b2 = tf.get_variable('b2', (Config.n_classes), initializer=tf.constant_initializer(0))
         input_shape = tf.shape(x)
-        state = tf.zeros(input_shape[0], Config.hidden_size)
+        state = tf.zeros((input_shape[0], Config.hidden_size))
 
         with tf.variable_scope("RNN"):
             for time_step in range(self.max_length):
@@ -464,7 +464,7 @@ def do_train(args):
 
         with tf.Session() as session:
             session.run(init)
-            model.fit(session, saver, train, dev)
+            score = model.fit(session, saver, train, dev)
             if report:
                 report.log_output(model.output(session, dev_raw))
                 report.save()
@@ -534,7 +534,7 @@ input> Germany 's representative to the European Union 's veterinary committee .
             while True:
                 # Create simple REPL
                 try:
-                    sentence = raw_input("input> ")
+                    sentence = input("input> ")
                     tokens = sentence.strip().split(" ")
                     for sentence, _, predictions in model.output(session, [(tokens, ["O"] * len(tokens))]):
                         predictions = [LBLS[l] for l in predictions]
@@ -560,7 +560,8 @@ if __name__ == "__main__":
                                 help="Path to vocabulary file")
     command_parser.add_argument('-vv', '--vectors', type=argparse.FileType('r'), default="data/wordVectors.txt",
                                 help="Path to word vectors file")
-    command_parser.add_argument('-c', '--cell', choices=["rnn", "gru"], default="rnn", help="Type of RNN cell to use.")
+    command_parser.add_argument('-c', '--cell', choices=["rnn", "gru"], default="rnn",
+                                help="Type of RNN cell to use.")  # 默认是RNN cell
     command_parser.set_defaults(func=do_test2)
 
     command_parser = subparsers.add_parser('train', help='')

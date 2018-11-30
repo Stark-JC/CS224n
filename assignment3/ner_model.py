@@ -59,7 +59,8 @@ class NERModel(Model):
         token_cm = ConfusionMatrix(labels=LBLS)
 
         correct_preds, total_correct, total_preds = 0., 0., 0.
-        for _, labels, labels_ in self.output(sess, examples_raw, examples):  # sentence, true_labels, pred_labels
+        for _, labels, labels_ in self.output(sess, examples_raw,
+                                              examples):  # raw_sentence(before padding), true_labels, pred_labels
             for l, l_ in zip(labels, labels_):
                 token_cm.update(l, l_)
             gold = set(get_chunks(labels))
@@ -101,12 +102,13 @@ class NERModel(Model):
         """
         Reports the output of the model on examples (uses helper to featurize each example).
         """
-        if inputs is None:
+        if inputs is None:  # 用于预测的时候
             inputs = self.preprocess_sequence_data(self.helper.vectorize(inputs_raw))
 
         preds = []
         prog = Progbar(target=1 + int(len(inputs) / self.config.batch_size))  # 设置总数，然后每次只要update当前数就行
-        for i, batch in enumerate(minibatches(inputs, self.config.batch_size, shuffle=False)):
+        for i, batch in enumerate(
+                minibatches(inputs, self.config.batch_size, shuffle=False)):  # 注意这里shuffle为false，对于rnn来说不需要
             # Ignore predict
             batch = batch[:1] + batch[2:]  # 为啥还要加batch[2:]，要忽略输出的话直接前面一半不就好了？
             preds_ = self.predict_on_batch(sess, *batch)
