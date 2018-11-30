@@ -109,6 +109,7 @@ class ModelHelper(object):
     @classmethod
     def load(cls, path):
         # Make sure the directory exists.
+        print(os.path.join(path, "features.pkl"))
         assert os.path.exists(path) and os.path.exists(os.path.join(path, "features.pkl"))
         # Save the tok2id map.
         with open(os.path.join(path, "features.pkl"), 'rb') as f:

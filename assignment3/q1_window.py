@@ -371,7 +371,6 @@ def do_train(args):
     logging.getLogger().addHandler(handler)
 
     report = None  # Report(Config.eval_output)
-
     with tf.Graph().as_default():
         logger.info("Building model...", )
         start = time.time()
