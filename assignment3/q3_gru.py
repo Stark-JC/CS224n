@@ -88,12 +88,10 @@ class SequencePredictor(Model):
             raise ValueError("Unsupported cell type.")
 
         x = self.inputs_placeholder
-        ### YOUR CODE HERE (~2-3 lines)
         preds = tf.nn.dynamic_rnn(cell, x, dtype=tf.float32)[1]
         preds = tf.sigmoid(preds)
-        ### END YOUR CODE
 
-        return preds  # state # preds
+        return preds
 
     def add_loss_op(self, preds):
         """Adds ops to compute the loss function.
@@ -111,10 +109,8 @@ class SequencePredictor(Model):
         """
         y = self.labels_placeholder
 
-        ### YOUR CODE HERE (~1-2 lines)
         loss = tf.nn.l2_loss(preds - y)
         loss = tf.reduce_mean(loss)
-        ### END YOUR CODE
 
         return loss
 
@@ -142,25 +138,17 @@ class SequencePredictor(Model):
         """
 
         optimizer = tf.train.GradientDescentOptimizer(learning_rate=self.config.lr)
-
-        ### YOUR CODE HERE (~6-10 lines)
-
         # - Remember to clip gradients only if self.config.clip_gradients
         # is True.
         # - Remember to set self.grad_norm
         grads_and_vars = optimizer.compute_gradients(loss)
-        variables = [output[1] for output in grads_and_vars]
         gradients = [output[0] for output in grads_and_vars]
+        variables = [output[1] for output in grads_and_vars]
         if self.config.clip_gradients:
-            tmp_gradients = tf.clip_by_global_norm(gradients, clip_norm=self.config.max_grad_norm)[0]
-            gradients = tmp_gradients
-
-        grads_and_vars = [(gradients[i], variables[i]) for i in range(len(gradients))]
+            gradients = tf.clip_by_global_norm(gradients, clip_norm=self.config.max_grad_norm)[0]
         self.grad_norm = tf.global_norm(gradients)
-
-        train_op = optimizer.apply_gradients(grads_and_vars)
-        ### END YOUR CODE
-
+        # train_op = optimizer.apply_gradients(list(zip(gradients,variables)))
+        train_op = optimizer.apply_gradients([(gradients[i], variables[i]) for i in range(len(gradients))])
         assert self.grad_norm is not None, "grad_norm was not set properly!"
         return train_op
 
@@ -170,7 +158,7 @@ class SequencePredictor(Model):
         """
         feed = self.create_feed_dict(inputs_batch, labels_batch=labels_batch)
         _, loss, grad_norm = sess.run([self.train_op, self.loss, self.grad_norm], feed_dict=feed)
-        return loss, grad_norm
+        return loss, grad_norm  # 返回一个batch数据的loss以及所有可训练参数的l2范数和开根号
 
     def run_epoch(self, sess, train):
         prog = Progbar(target=1 + int(len(train) / self.config.batch_size))
@@ -235,8 +223,8 @@ Uo={:.2f}, Wo={:.2f}, bo={:.2f}""".format(x, Ur[0, 0], Wr[0, 0], br[0], Uz[0, 0]
     plt.plot(h, ht_rnn, label="rnn")
     plt.plot(h, ht_gru, label="gru")
     plt.plot(h, h, color='gray', linestyle='--')
-    plt.ylabel("$h_{t}$")
-    plt.xlabel("$h_{t-1}$")
+    plt.ylabel(r"$h_{t}$")
+    plt.xlabel(r"$h_{t-1}$")
     plt.legend()
     output_path = "{}-{}-{}.png".format(args.output_prefix, x, "dynamics")
     plt.savefig(output_path)
