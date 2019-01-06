@@ -477,7 +477,7 @@ if __name__ == "__main__":
                                 help="Dev data")
     command_parser.add_argument('-v', '--vocab', type=argparse.FileType('r'), default="data/vocab.txt",
                                 help="Path to vocabulary file")
-    command_parser.add_argument('-vv', '--vectors', type=argparse.FileType('r'), default="data/wordVectors.txt",
+    command_parser.add_argument('-vv', '--vectors', type=argparse.FileType('r'), default="data/glove_vectors.txt",
                                 help="Path to word vectors file")
     command_parser.set_defaults(func=do_test2)
 
@@ -488,7 +488,7 @@ if __name__ == "__main__":
                                 help="Dev data")
     command_parser.add_argument('-v', '--vocab', type=argparse.FileType('r'), default="data/vocab.txt",
                                 help="Path to vocabulary file")
-    command_parser.add_argument('-vv', '--vectors', type=argparse.FileType('r'), default="data/wordVectors.txt",
+    command_parser.add_argument('-vv', '--vectors', type=argparse.FileType('r'), default="data/glove_vectors.txt",
                                 help="Path to word vectors file")
     command_parser.set_defaults(func=do_train)
 
@@ -498,7 +498,7 @@ if __name__ == "__main__":
     command_parser.add_argument('-m', '--model-path', help="Training data")
     command_parser.add_argument('-v', '--vocab', type=argparse.FileType('r'), default="data/vocab.txt",
                                 help="Path to vocabulary file")
-    command_parser.add_argument('-vv', '--vectors', type=argparse.FileType('r'), default="data/wordVectors.txt",
+    command_parser.add_argument('-vv', '--vectors', type=argparse.FileType('r'), default="data/glove_vectors.txt",
                                 help="Path to word vectors file")
     command_parser.add_argument('-o', '--output', type=argparse.FileType('w'), default=sys.stdout, help="Training data")
     command_parser.set_defaults(func=do_evaluate)
@@ -507,7 +507,7 @@ if __name__ == "__main__":
     command_parser.add_argument('-m', '--model-path', help="Training data")
     command_parser.add_argument('-v', '--vocab', type=argparse.FileType('r'), default="data/vocab.txt",
                                 help="Path to vocabulary file")
-    command_parser.add_argument('-vv', '--vectors', type=argparse.FileType('r'), default="data/wordVectors.txt",
+    command_parser.add_argument('-vv', '--vectors', type=argparse.FileType('r'), default="data/glove_vectors.txt",
                                 help="Path to word vectors file")
     command_parser.set_defaults(func=do_shell)
 
